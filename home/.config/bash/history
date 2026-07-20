@@ -1,0 +1,10 @@
+# shellcheck shell=bash
+# vim: ft=bash
+
+# History
+# shellcheck disable=SC2155
+export HISTTIMEFORMAT=$(echo -e "\033[0;33m"[%F %T] "\033[0m")
+export HISTSIZE=10000
+export HISTFILESIZE=50000
+export HISTCONTROL=ignoreboth
+export HISTFILE="$XDG_DATA_HOME/bash_history"

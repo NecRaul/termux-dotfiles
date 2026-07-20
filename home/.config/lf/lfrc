@@ -1,0 +1,165 @@
+# Basic vars
+set shellopts '-eu'
+set ifs "\n"
+set scrolloff 10
+set period 1
+set hiddenfiles ".*:*.aux:*.log:*.bbl:*.bcf:*.blg:*.run.xml:lost+found"
+set autoquit true
+
+# cmds/functions
+cmd open ${{
+    case $(file --mime-type -Lb "$f") in
+    text/markdown|text/x-markdown) glow -t $fx ;;
+    text/*|application/json|application/pgp-encrypted|application/x-subrip|inode/x-empty) $EDITOR $fx ;;
+    *) for f in $fx; do termux-open "$f" >/dev/null 2>&1; done;;
+    esac
+}}
+
+cmd mkdir $mkdir -p "$@"
+
+cmd extract ${{
+    clear; tput cup $(($(tput lines)/3)); tput bold
+    set -f
+    printf "%s\n\t" "$fx"
+    printf "extract?[y/N]"
+    read ans
+    [ $ans = "y" ] && {
+        case $fx in
+            *.tar)       tar xf $fx      ;;
+            *.tar.bz2)   tar xjf $fx     ;;
+            *.tar.gz)    tar xzf $fx     ;;
+            *.tar.xz)    tar xf $fx      ;;
+            *.tbz2)      tar xjf $fx     ;;
+            *.tgz)       tar xzf $fx     ;;
+            *.gz)        gunzip $fx      ;;
+            *.zip)       unzip $fx       ;;
+            *.rar)       unrar e $fx     ;;
+            *.7z)        7z x $fx        ;;
+            *.bz2)       bunzip2 $fx     ;;
+            *.Z)         uncompress $fx  ;;
+        esac
+    }
+}}
+
+cmd on-init &{{
+    lf -remote "send $id set statfmt \"$(eza -ld --no-quotes --color=always -g "$f" | sed 's/\\/\\\\/g;s/"/\\"/g')\""
+}}
+
+cmd on-select &{{
+    lf -remote "send $id set statfmt \"$(eza -ld --no-quotes --color=always -g "$f" | sed 's/\\/\\\\/g;s/"/\\"/g')\""
+}}
+
+cmd on-cd &{{
+    zoxide add "$PWD"
+}}
+
+cmd delete ${{
+    clear; tput cup $(($(tput lines)/3)); tput bold
+    set -f
+    # !!! NO TRAILING SLASHES !!!
+    protected_paths=$(printf '%s\n' "$HOME" "$HOME/termux-dotfiles" "$HOME/storage" "$HOME/.config" "$HOME/.local")
+    forbidden_paths=""
+    for x in $fx; do
+        clean_file=$(echo "$x" | sed 's:/*$::')
+        if echo "$protected_paths" | grep -qx "$clean_file"; then
+            forbidden_paths="$forbidden_paths$x\n"
+        fi
+    done
+    if [ -n "$forbidden_paths" ]; then
+        clear; tput cup $(($(tput lines)/3)); tput bold
+        printf "\033[31mERROR: The following paths are PROTECTED and cannot be deleted:\033[0m\n\n"
+        printf "$forbidden_paths"
+        read -p "Press any key to continue..."
+        return
+    fi
+    printf "%s\n\t" "$fx"
+    printf "delete?[y/N]"
+    read ans
+    [ $ans = "y" ] && rm -rf -- $fx
+}}
+
+cmd moveto ${{
+    clear; tput cup $(($(tput lines)/3)); tput bold
+    set -f
+    clear; echo "Move to where?"
+    dest="$(sed -e 's/\s*#.*//' -e '/^$/d' -e 's/^\S*\s*//' $XDG_CONFIG_HOME/shell/bm-dirs | fzf | sed 's|~|$HOME|')" &&
+    for x in $fx; do
+        eval mv -iv \"$x\" \"$dest\"
+    done &&
+    termux-notification --title "File(s) moved." --content "File(s) moved to $dest."
+}}
+
+cmd copyto ${{
+    clear; tput cup $(($(tput lines)/3)); tput bold
+    set -f
+    clear; echo "Copy to where?"
+    dest="$(sed -e 's/\s*#.*//' -e '/^$/d' -e 's/^\S*\s*//' $XDG_CONFIG_HOME/shell/bm-dirs | fzf | sed 's|~|$HOME|')" &&
+    for x in $fx; do
+        eval cp -ivr \"$x\" \"$dest\"
+    done &&
+    termux-notification --title "File(s) copied." --content "File(s) copies to $dest."
+}}
+
+cmd bulkrename ${{
+    tmpfile_old="$(mktemp)"
+    tmpfile_new="$(mktemp)"
+
+    [ -n "$fs" ] && fs=$(basename -a $fs) || fs=$(ls)
+
+    echo "$fs" > "$tmpfile_old"
+    echo "$fs" > "$tmpfile_new"
+    $EDITOR "$tmpfile_new"
+
+    [ "$(wc -l < "$tmpfile_old")" -eq "$(wc -l < "$tmpfile_new")" ] || { rm -f "$tmpfile_old" "$tmpfile_new"; exit 1; }
+
+    paste "$tmpfile_old" "$tmpfile_new" | while IFS="$(printf '\t')" read -r src dst
+    do
+        [ "$src" = "$dst" ] || [ -e "$dst" ] || mv -- "$src" "$dst"
+    done
+
+    rm -f "$tmpfile_old" "$tmpfile_new"
+    lf -remote "send $id unselect"
+}}
+
+cmd z %{{
+    result="$(zoxide query --exclude "$PWD" "$@" | sed 's/\\/\\\\/g;s/"/\\"/g')"
+    lf -remote "send $id cd \"$result\""
+}}
+
+cmd zi ${{
+    result="$(zoxide query -i | sed 's/\\/\\\\/g;s/"/\\"/g')"
+    lf -remote "send $id cd \"$result\""
+}}
+
+# Bindings
+map <c-f> $lf -remote "send $id select \"$(fd . -L -d 5 -H -I | fzf)\""
+map J $lf -remote "send $id cd $(sed -e 's/\s*#.*//' -e '/^$/d' -e 's/^\S*\s*//' $XDG_CONFIG_HOME/shell/bm-dirs | fzf)"
+map H cd ~
+map g top
+map D delete
+map <delete> delete
+map E extract
+map C copyto
+map M moveto
+map <c-n> push :mkdir<space>
+map <c-r> reload
+map <c-h> set hidden!
+map . set hidden!
+map <enter> shell
+map x $$f
+map X !$f
+map o open
+map O &termux-open "$f"
+
+map R push A<c-u>
+map i :rename
+map I :rename; cmd-home
+map a :rename; cmd-right
+map A :rename; cmd-end
+map B bulkrename
+
+map t $printf "\033c"; cd "$PWD"; exec $SHELL
+map T $am start -n com.termux/com.termux.app.TermuxActivity >/dev/null 2>&1
+map <c-y> $printf "%s" "$fx" | sed 's/.*\///' | termux-clipboard-set
+map Y $printf "%s" "$fx" | termux-clipboard-set
+map V push :!$EDITOR<space>

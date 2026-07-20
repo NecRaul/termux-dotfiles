@@ -1,0 +1,4 @@
+--cookies "~/.config/yt-dlp/cookies.txt"
+--format "bv+ba/b"
+--format-sort "res,vcodec:vp9,acodec:opus"
+--embed-metadata

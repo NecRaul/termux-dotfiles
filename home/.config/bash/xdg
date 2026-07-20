@@ -1,0 +1,10 @@
+# shellcheck shell=bash
+# vim: ft=bash
+
+# XDG_CONFIG_HOME
+export RIPGREP_CONFIG_PATH="$XDG_CONFIG_HOME/ripgrep/ripgreprc"
+
+# XDG_DATA_HOME
+export GNUPGHOME="$XDG_DATA_HOME/gnupg"
+# shellcheck disable=SC2155
+export MANPATH="${MANPATH}:$(find "$XDG_DATA_HOME/uv/tools" -maxdepth 3 -type d -name man -printf '%p:' 2>/dev/null)"

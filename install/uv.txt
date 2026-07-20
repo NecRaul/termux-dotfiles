@@ -1,0 +1,4 @@
+lain-shorten[clipboard]
+lain-upload[clipboard]
+pre-commit
+yt-dlp[default,curl-cffi]

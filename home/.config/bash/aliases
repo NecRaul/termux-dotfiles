@@ -1,0 +1,24 @@
+# shellcheck shell=bash
+# vim: ft=bash
+
+# General/convenience
+alias q="kill -9 $$"
+alias l="clear"
+alias a="tmux attach || tmux"
+alias vim="nvim"
+alias mkdir="mkdir -p"
+alias diff="diff --color=auto"
+
+# Coreutils replacements
+EZA_OPTS="--color=auto --icons=never --no-quotes --group-directories-first"
+alias ls="eza $EZA_OPTS -x"
+alias ld="eza $EZA_OPTS -xa | grep '^\\.'"
+alias la="eza $EZA_OPTS -xa"
+alias ll="eza $EZA_OPTS -xlg --git"
+alias lt="eza $EZA_OPTS -xTg -L 3"
+alias lla="eza $EZA_OPTS -xalg --git"
+alias llt="eza $EZA_OPTS -xlTg --git -I .git -L 3"
+alias lta="eza $EZA_OPTS -xaTg -I .git -L 3"
+alias llta="eza $EZA_OPTS -xalTg --git -I .git -L 3"
+alias cat="bat --color=auto --theme base16-256"
+alias grep="rg --color=auto"

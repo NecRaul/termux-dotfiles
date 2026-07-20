@@ -1,0 +1,28 @@
+Home ~
+Documents ~/storage/shared/Documents
+Downloads ~/storage/shared/Downloads
+Pictures ~/storage/shared/Pictures
+Music ~/storage/shared/Music
+Videos ~/storage/shared/Movies
+
+Dotfiles ~/termux-dotfiles
+
+Books ~/storage/shared/Books
+
+Camera ~/storage/shared/DCIM/Camera
+Screenshots ~/storage/shared/DCIM/Screenshots
+
+Videos ~/storage/shared/Movies
+
+Notes ~/storage/shared/Notes
+
+Kuroba ~/storage/shared/Pictures/Kuroba
+Mihon ~/storage/shared/Pictures/Mihon
+Tachiyomi ~/storage/shared/Pictures/Tachiyomi
+
+Cache ~/.cache
+Config ~/.config
+Local ~/.local
+Bin ~/.local/bin
+Data ~/.local/share
+State ~/.local/state

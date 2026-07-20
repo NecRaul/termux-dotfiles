@@ -1,0 +1,10 @@
+# shellcheck shell=bash
+# vim: ft=bash
+
+wget() {
+    command wget \
+        --hsts-file="$XDG_CACHE_HOME/wget-hsts" \
+        --continue \
+        --show-progress \
+        "$@"
+}
